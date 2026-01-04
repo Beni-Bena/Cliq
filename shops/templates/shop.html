@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ vendor.shop_name }} - Boutique en ligne</title>
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <div class="store-info">
+                <h1 class="store-name">{{ vendor.shop_name }}</h1>
+                <div class="store-url">
+                    <i class="fas fa-link"></i>
+                    <span>cliq.com/@{{ vendor.slug }}</span>
+                </div>
+            </div>
+            
+            <div class="store-stats">
+                <div class="stat">
+                    <i class="fas fa-cube"></i>
+                    <span id="product-count">{{ products|length }} produits</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-star"></i>
+                    <span>4.8/5</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section produits -->
+        <main class="products">
+            <div class="products-header">
+                <h2 class="section-title">Nos produits</h2>
+                
+                <!-- Barre de recherche -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Rechercher un produit...">
+                        <button id="clear-search" class="clear-search-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message si aucun produit trouvé -->
+            <div id="no-products-message" class="no-products-message" style="display: none;">
+                <i class="fas fa-search"></i>
+                <p>Aucun produit ne correspond à votre recherche</p>
+                <button id="reset-search" class="reset-search-btn">
+                    Afficher tous les produits
+                </button>
+            </div>
+            
+            <!-- Grille de produits -->
+            <div class="products-grid" id="products-grid">
+                {% for product in products %}
+                <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
+                    <div class="product-image">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    </div>
+
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-description">{{ product.description|default:"" }}</p>
+                        <div class="product-price">{{ product.price }} $</div>
+
+                        <a class="whatsapp-btn"
+                           href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit {{ product.name|urlencode }}"
+                           target="_blank">
+                            <i class="fab fa-whatsapp"></i>
+                            Commander
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Aucun produit disponible pour le moment.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <!-- Section informations -->
+        <section class="info-section">
+            <h2 class="section-title">Comment commander ?</h2>
+            
+            <div class="info-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Choisis ton produit</h4>
+                        <p>Clique sur le bouton "Commander"</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Ouvre WhatsApp</h4>
+                        <p>Un message pré-rempli s'ouvre</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Finalise ta commande</h4>
+                        <p>Discute avec {{ vendor.shop_name }} pour les détails</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>{{ vendor.shop_name }}</h3>
+                    <p>Boutique en ligne</p>
+                </div>
+                
+                <div class="footer-contact">
+                    <a href="https://wa.me/{{ vendor.whatsapp_number }}" class="contact-btn" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        Contacter {{ vendor.shop_name }}
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>{{ vendor.shop_name }} • Vitrine créée avec Cliq</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bouton WhatsApp flottant -->
+    <a href="https://wa.me/{{ vendor.whatsapp_number }}" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="{% static 'js/shop.js' %}"></script>
+</body>
+</html>
