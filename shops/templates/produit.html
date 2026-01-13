@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Produits - {{ vendor.shop_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <link rel="stylesheet" href="{% static 'css/produit.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <div class="store-info">
+                <h1 class="store-name">{{ vendor.shop_name }}</h1>
+                <div class="store-url">
+                    <i class="fas fa-link"></i>
+                    <span>cliq.com/@{{ vendor.slug }}</span>
+                </div>
+            </div>
+            
+            <div class="store-stats">
+                <div class="stat">
+                    <i class="fas fa-cube"></i>
+                    <span id="product-count">{{ products|length }} produits</span>
+                </div>
+                <a href="#ajouter-produit" class="add-product-btn">
+                    <i class="fas fa-plus"></i>
+                    Ajouter un produit
+                </a>
+                <a href="{% url 'logout' %}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- Section produits -->
+        <main class="products">
+            <div class="products-header">
+                <h2 class="section-title">Gestion des produits</h2>
+                
+                <!-- Barre de recherche -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Rechercher un produit...">
+                        <button id="clear-search" class="clear-search-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message si aucun produit trouvé -->
+            <div id="no-products-message" class="no-products-message" style="display: none;">
+                <i class="fas fa-search"></i>
+                <p>Aucun produit ne correspond à votre recherche</p>
+                <button id="reset-search" class="reset-search-btn">
+                    Afficher tous les produits
+                </button>
+            </div>
+            
+            <!-- Grille de produits -->
+            <div class="products-grid" id="products-grid">
+                {% for product in products %}
+                <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
+                    <div class="product-image">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    </div>
+
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-description">{{ product.description|default:"" }}</p>
+                        <div class="product-price">{{ product.price }} $</div>
+
+                        <div class="product-actions">
+                            <a class="whatsapp-btn"
+                               href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit {{ product.name|urlencode }}, son prix est de {{ product.price }} $."
+                               target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                                Commander
+                            </a>
+                            <a href="#modifier-produit-{{ product.id }}" class="edit-product-btn">
+                                <i class="fas fa-edit"></i>
+                                Modifier
+                            </a>
+                            <a href="#supprimer-produit-{{ product.id }}" class="delete-product-btn">
+                                <i class="fas fa-trash"></i>
+                                Supprimer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal de modification pour ce produit -->
+                <div id="modifier-produit-{{ product.id }}" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Modifier le produit</h3>
+                            <a href="#" class="modal-close">&times;</a>
+                        </div>
+                        <form method="POST" action="{% url 'edit_product' product.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="nom-{{ product.id }}">Nom du produit</label>
+                                <input type="text" id="nom-{{ product.id }}" name="name" value="{{ product.name }}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="description-{{ product.id }}">Description</label>
+                                <textarea id="description-{{ product.id }}" name="description" rows="3">{{ product.description }}</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="prix-{{ product.id }}">Prix ($)</label>
+                                <input type="number" id="prix-{{ product.id }}" name="price" step="0.01" value="{{ product.price }}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="image-{{ product.id }}">Image du produit</label>
+                                <div class="current-image">
+                                    <img src="{{ product.image.url }}" alt="Image actuelle" style="max-width: 100px; display: block; margin: 10px 0;">
+                                    <span>Image actuelle</span>
+                                </div>
+                                <input type="file" id="image-{{ product.id }}" name="image" accept="image/*">
+                                <small>Laisser vide pour conserver l'image actuelle</small>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Enregistrer les modifications</button>
+                                <a href="#" class="btn-secondary">Annuler</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Modal de suppression pour ce produit -->
+                <div id="supprimer-produit-{{ product.id }}" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Supprimer le produit</h3>
+                            <a href="#" class="modal-close">&times;</a>
+                        </div>
+                        <form method="POST" action="{% url 'delete_product' product.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="delete-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <p>Êtes-vous sûr de vouloir supprimer le produit <strong>"{{ product.name }}"</strong> ?</p>
+                                    <p class="warning-text">Cette action est irréversible. Toutes les données du produit seront définitivement supprimées.</p>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                    Confirmer la suppression
+                                </button>
+                                <a href="#" class="btn-secondary">Annuler</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Aucun produit disponible pour le moment.</p>
+                    <a href="#ajouter-produit" class="add-product-btn">
+                        <i class="fas fa-plus"></i>
+                        Ajouter votre premier produit
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <!-- Modal d'ajout de produit -->
+        <div id="ajouter-produit" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Ajouter un nouveau produit</h3>
+                    <a href="#" class="modal-close">&times;</a>
+                </div>
+                <form method="POST" action="{% url 'add_product' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="nom">Nom du produit</label>
+                        <input type="text" id="nom" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prix">Prix ($)</label>
+                        <input type="number" id="prix" name="price" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">Image du produit</label>
+                        <input type="file" id="image" name="image" accept="image/*" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Ajouter le produit</button>
+                        <a href="#" class="btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>{{ vendor.shop_name }}</h3>
+                    <p>Boutique en ligne</p>
+                </div>
+                
+                <div class="footer-contact">
+                    <a href="{% url 'shop' vendor.slug %}" class="contact-btn">
+                        <i class="fas fa-store"></i>
+                        Voir la boutique publique
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>{{ vendor.shop_name }} • Gestion produit avec Cliq</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/shop.js' %}"></script>
+</body>
+</html>

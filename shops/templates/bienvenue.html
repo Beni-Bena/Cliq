@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur Cliq</title>
+    <link rel="stylesheet" href="{% static 'css/Bienvenue.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenue {{ full_name }} ! 🎉</h1>
+        <p>Votre boutique "<strong>{{ shop_name }}</strong>" a été créée avec succès.</p>
+        <p>Email : {{ email }}</p>
+        <p>WhatsApp : {{ whatsapp }}</p>
+        <p>
+            Vous pouvez accéder à votre espace vendeur et commencer à ajouter vos produits ici : 
+            <a href="{% url 'login' %}">Se connecter</a>
+        </p>
+        <p>Merci de faire partie de la famille Cliq !</p>
+    </div>
+</body>
+</html>

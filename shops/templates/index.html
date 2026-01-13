@@ -18,9 +18,15 @@
                 <div class="logo">Cliq</div>
                 <span class="logo-subtitle">Vitrine Web Pro</span>
             </div>
-            <button class="menu-toggle" id="menuToggle" aria-label="Menu">
-                <i class="fas fa-bars"></i>
-            </button>
+            <div class="header-actions">
+                <a href="{% url 'login' %}" class="login-btn">
+                    <i class="fas fa-user"></i>
+                    Espace Vendeur
+                </a>
+                <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </header>
 
         <!-- Menu mobile -->
@@ -29,294 +35,455 @@
             <a href="#how-it-works" class="nav-link">Fonctionnement</a>
             <a href="#pricing" class="nav-link">Tarifs</a>
             <a href="#contact" class="nav-link">Contact</a>
+            <a href="{% url 'login' %}" class="nav-link">
+                <i class="fas fa-user"></i>
+                Espace Vendeur
+            </a>
         </nav>
 
-        <!-- Contenu principal -->
-        <main class="main-content">
-            <!-- Section héro -->
-            <section class="hero-section">
-                <div class="hero-content">
-                    <h1 class="hero-title">Crée ta vitrine web en <span class="highlight">quelques clics</span> et reçois les commandes via WhatsApp</h1>
-                    <p class="hero-subtitle">Transforme ton activité en ligne avec une vitrine professionnelle, sans compétences techniques. Gère tes ventes facilement et augmente tes revenus.</p>
-                    
-                    <!-- Formulaire de contact -->
-                    <div class="contact-form">
-                        <h2 class="form-title">Commence gratuitement</h2>
+        <!-- Section de présentation -->
+        <section class="presentation-section">
+            <div class="presentation-content">
+                <h1 class="presentation-title">La solution toute-en-un pour vendre en ligne</h1>
+                <p class="presentation-subtitle">
+                    Cliq révolutionne la vente en ligne en Afrique et dans le monde. Créez votre boutique professionnelle 
+                    en quelques minutes, gérez vos produits et recevez des commandes via WhatsApp.
+                </p>
+            </div>
+        </section>
 
+        <!-- Section héro -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h2 class="hero-title">Crée ta vitrine web en <span class="highlight">quelques clics</span></h2>
+                <p class="hero-subtitle">Transforme ton activité en ligne avec une vitrine professionnelle, sans compétences techniques. Gère tes ventes facilement et augmente tes revenus.</p>
+                
+                <!-- Choix d'action -->
+                <div class="action-choice">
+                    <a href="?form=signup" class="choice-btn {% if active_form == 'signup' or not active_form %}active{% endif %}">
+                        Nouveau vendeur
+                    </a>
+                    <a href="?form=login" class="choice-btn {% if active_form == 'login' %}active{% endif %}">
+                        Déjà inscrit
+                    </a>
+                </div>
+                
+                <!-- Formulaire d'inscription -->
+                {% if active_form == 'signup' or not active_form %}
+                <div class="contact-form" id="signupForm">
+                    <h3 class="form-title">Commencer gratuitement</h3>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="fas fa-user"></i>
-                                <input type="text" id="name" placeholder="Votre nom complet">
+                                <input type="text" name="full_name" placeholder="Votre nom complet" required>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="fas fa-store"></i>
-                                <input type="text" id="storeName" placeholder="Nom de votre magasin">
+                                <input type="text" name="shop_name" placeholder="Nom de votre magasin" required>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="fab fa-whatsapp"></i>
-                                <input type="tel" id="whatsapp" placeholder="Numéro WhatsApp (ex: 243890076669)">
+                                <input type="tel" name="whatsapp" placeholder="Numéro WhatsApp (ex: 243890076669)" required>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="fas fa-envelope"></i>
-                                <input type="email" id="email" placeholder="Adresse email">
+                                <input type="email" name="email" placeholder="Adresse email" required>
                             </div>
                         </div>
 
-                        <button type="button" class="cta-button" onclick="contactDeveloper()">
-                            <i class="fab fa-whatsapp"></i>
-                            Créer ma vitrine
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" name="password1" placeholder="Mot de passe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" name="password2" placeholder="Confirmer le mot de passe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-checkbox">
+                            <input type="checkbox" name="terms" id="terms" required>
+                            <label for="terms">J'accepte les <a href="#" class="terms-link">conditions d'utilisation</a></label>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <i class="fas fa-store"></i>
+                            Créer ma boutique
                         </button>
 
                         <p class="form-note">
-                            <i class="fas fa-shield-alt"></i> Vous serez redirigé vers WhatsApp
+                            <i class="fas fa-shield-alt"></i> Vos données sont sécurisées
                         </p>
-                    </div>
+                    </form>
 
                 </div>
+                {% endif %}
                 
-                <!-- Visuel smartphone -->
-                <div class="phone-visual">
-                    <div class="phone-mockup">
-                        <div class="phone-screen">
-                            <!-- En-tête de la vitrine web -->
-                            <div class="webstore-header">
-                                <div class="store-logo">Boutique Élégante</div>
-                                <div class="store-nav">
-                                    <span class="nav-item active">Accueil</span>
-                                    <span class="nav-item">Produits</span>
-                                    <span class="nav-item">À propos</span>
-                                    <span class="nav-item">Contact</span>
-                                </div>
+                <!-- Formulaire de connexion -->
+                {% if active_form == 'login' %}
+                <div class="contact-form" id="loginForm">
+                    <h3 class="form-title">Connexion Espace Vendeur</h3>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
                             </div>
-                            
-                            <!-- Contenu de la vitrine -->
-                            <div class="webstore-content">
-                                <div class="product-showcase">
-                                    <div class="product-image" style="background: linear-gradient(135deg, #8A2BE2, #1E90FF);">
-                                        <div class="product-badge">Nouveau</div>
-                                    </div>
-                                    <div class="product-info">
-                                        <h3>Sac à main premium</h3>
-                                        <p>Cuir véritable, design élégant, plusieurs coloris disponibles</p>
-                                        <div class="product-price">89,99€</div>
-                                        <button class="product-button">
-                                            <i class="fab fa-whatsapp"></i> Commander via WhatsApp
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="product-grid">
-                                    <div class="product-card">
-                                        <div class="product-thumb" style="background-color: #FF9A8B;"></div>
-                                        <div class="product-details">
-                                            <h4>Montre élégante</h4>
-                                            <p class="price">129€</p>
-                                        </div>
-                                    </div>
-                                    <div class="product-card">
-                                        <div class="product-thumb" style="background-color: #8BC6EC;"></div>
-                                        <div class="product-details">
-                                            <h4>Chaussures sport</h4>
-                                            <p class="price">74€</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Pied de page -->
-                            <div class="webstore-footer">
-                                <div class="whatsapp-cta">
-                                    <i class="fab fa-whatsapp"></i>
-                                    <span>Contactez-nous sur WhatsApp</span>
-                                </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="text" name="username" placeholder="Adresse email ou WhatsApp" required>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Section avantages -->
-            <section class="advantages-section" id="features">
-                <h2 class="section-title">Pourquoi choisir Cliq ?</h2>
-                <p class="section-subtitle">Tout ce dont tu as besoin pour développer tes ventes en ligne</p>
-                
-                <div class="advantages-grid">
-                    <div class="advantage-card">
-                        <div class="advantage-icon" style="background-color: rgba(30, 144, 255, 0.1);">
-                            <i class="fas fa-link" style="color: #1E90FF;"></i>
-                        </div>
-                        <h3>Un lien unique pour tous tes produits</h3>
-                        <p>Partage un seul lien web avec tes clients. Ils pourront parcourir tous tes produits, voir les photos, descriptions et prix en un seul endroit.</p>
-                    </div>
-                    
-                    <div class="advantage-card">
-                        <div class="advantage-icon" style="background-color: rgba(138, 43, 226, 0.1);">
-                            <i class="fas fa-clock" style="color: #8A2BE2;"></i>
-                        </div>
-                        <h3>Gagne du temps</h3>
-                        <p>Fini les envois de dizaines de photos. Tes clients voient tout directement sur ta vitrine. Concentre-toi sur les ventes, pas sur l'administration.</p>
-                    </div>
-                    
-                    <div class="advantage-card">
-                        <div class="advantage-icon" style="background-color: rgba(255, 215, 0, 0.1);">
-                            <i class="fas fa-user-check" style="color: #FFD700;"></i>
-                        </div>
-                        <h3>Clients sérieux</h3>
-                        <p>Les clients qui te contactent ont déjà vu tes produits et prix. Ils sont décidés à acheter, ce qui augmente tes chances de vente.</p>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section fonctionnement -->
-            <section class="how-it-works" id="how-it-works">
-                <h2 class="section-title">Comment ça marche ?</h2>
-                
-                <div class="steps-container">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Crée ta vitrine</h3>
-                            <p>Inscris-toi en 2 minutes et personnalise ta vitrine avec tes produits et tes photos.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Partage ton lien</h3>
-                            <p>Diffuse le lien de ta vitrine sur tes réseaux sociaux, par SMS ou email.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Reçois les commandes</h3>
-                            <p>Tes clients consultent tes produits et te contactent directement par WhatsApp pour commander.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section témoignages -->
-            <section class="testimonials">
-                <h2 class="section-title">Ils utilisent déjà Cliq</h2>
-                
-                <div class="testimonial-container">
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            <p>"Avant, je passais des heures à envoyer des photos à chaque client. Maintenant, avec ma vitrine Cliq, je gagne 2 heures par jour !"</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">S</div>
-                            <div class="author-info">
-                                <h4>Sophie Martin</h4>
-                                <p>Vendeuse de bijoux</p>
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" name="password" placeholder="Mot de passe" required>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            <p>"Mes ventes ont augmenté de 60% depuis que j'utilise Cliq. Les clients adorent pouvoir tout voir avant de me contacter."</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">K</div>
-                            <div class="author-info">
-                                <h4>Kevin Dubois</h4>
-                                <p>Vendeur de sneakers</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="logo">Cliq</div>
-                    <p class="footer-tagline">La vitrine web simple pour tous les vendeurs</p>
-                </div>
-                
-                <div class="footer-links">
-                    <div class="link-group">
-                        <h4>Produit</h4>
-                        <a href="#features">Fonctionnalités</a>
-                        <a href="#how-it-works">Comment ça marche</a>
-                        <a href="#pricing">Tarifs</a>
-                    </div>
-                    
-                    <div class="link-group">
-                        <h4>Support</h4>
-                        <a href="#">Centre d'aide</a>
-                        <a href="#">Contact</a>
-                        <a href="#">FAQ</a>
-                    </div>
-                    
-                    <div class="link-group">
-                        <h4>Légal</h4>
-                        <a href="#">Confidentialité</a>
-                        <a href="#">Conditions d'utilisation</a>
-                        <a href="#">Mentions légales</a>
-                    </div>
-                </div>
-                
-                <div class="footer-newsletter">
-                    <h4>Restez informé</h4>
-                    <p>Recevez nos conseils pour booster vos ventes</p>
-                    <div class="newsletter-form">
-                        <input type="email" placeholder="Votre email">
-                        <button type="submit">
-                            <i class="fas fa-paper-plane"></i>
+                        <div class="form-options">
+                            <div class="form-checkbox">
+                                <input type="checkbox" name="remember" id="remember">
+                                <label for="remember">Se souvenir de moi</label>
+                            </div>
+                            <a href="" class="forgot-password">Mot de passe oublié ?</a>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Se connecter
                         </button>
+
+                        <p class="form-switch">
+                            Pas encore de compte ? <a href="?form=signup">Inscrivez-vous</a>
+                        </p>
+                    </form>
+                </div>
+                {% endif %}
+
+            </div>
+            
+            <!-- Visuel smartphone -->
+            <div class="phone-visual">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <!-- En-tête de la vitrine web -->
+                        <div class="webstore-header">
+                            <div class="store-logo">Boutique Élégante</div>
+                            <div class="store-nav">
+                                <span class="nav-item active">Accueil</span>
+                                <span class="nav-item">Produits</span>
+                                <span class="nav-item">À propos</span>
+                                <span class="nav-item">Contact</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenu de la vitrine -->
+                        <div class="webstore-content">
+                            <div class="product-showcase">
+                                <div class="product-image" style="background: linear-gradient(135deg, #8A2BE2, #1E90FF);">
+                                    <div class="product-badge">Nouveau</div>
+                                </div>
+                                <div class="product-info">
+                                    <h3>Sac à main premium</h3>
+                                    <p>Cuir véritable, design élégant, plusieurs coloris disponibles</p>
+                                    <div class="product-price">89,99€</div>
+                                    <button class="product-button">
+                                        <i class="fab fa-whatsapp"></i> Commander via WhatsApp
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="product-grid">
+                                <div class="product-card">
+                                    <div class="product-thumb" style="background-color: #FF9A8B;"></div>
+                                    <div class="product-details">
+                                        <h4>Montre élégante</h4>
+                                        <p class="price">129€</p>
+                                    </div>
+                                </div>
+                                <div class="product-card">
+                                    <div class="product-thumb" style="background-color: #8BC6EC;"></div>
+                                    <div class="product-details">
+                                        <h4>Chaussures sport</h4>
+                                        <p class="price">74€</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pied de page -->
+                        <div class="webstore-footer">
+                            <div class="whatsapp-cta">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>Contactez-nous sur WhatsApp</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </section>
+
+        <!-- Section avantages -->
+        <section class="advantages-section" id="features">
+            <h2 class="section-title">Pourquoi choisir Cliq ?</h2>
+            <p class="section-subtitle">Tout ce dont tu as besoin pour développer tes ventes en ligne</p>
             
-            <div class="footer-bottom">
-                <p>© 2023 Cliq. Tous droits réservés.</p>
-                <div class="social-links">
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <div class="advantages-grid">
+                <div class="advantage-card">
+                    <div class="advantage-icon" style="background-color: rgba(30, 144, 255, 0.1);">
+                        <i class="fas fa-link" style="color: #1E90FF;"></i>
+                    </div>
+                    <h3>Un lien unique pour tous tes produits</h3>
+                    <p>Partage un seul lien web avec tes clients. Ils pourront parcourir tous tes produits, voir les photos, descriptions et prix en un seul endroit.</p>
+                </div>
+                
+                <div class="advantage-card">
+                    <div class="advantage-icon" style="background-color: rgba(138, 43, 226, 0.1);">
+                        <i class="fas fa-clock" style="color: #8A2BE2;"></i>
+                    </div>
+                    <h3>Gagne du temps</h3>
+                    <p>Fini les envois de dizaines de photos. Tes clients voient tout directement sur ta vitrine. Concentre-toi sur les ventes, pas sur l'administration.</p>
+                </div>
+                
+                <div class="advantage-card">
+                    <div class="advantage-icon" style="background-color: rgba(255, 215, 0, 0.1);">
+                        <i class="fas fa-user-check" style="color: #FFD700;"></i>
+                    </div>
+                    <h3>Clients sérieux</h3>
+                    <p>Les clients qui te contactent ont déjà vu tes produits et prix. Ils sont décidés à acheter, ce qui augmente tes chances de vente.</p>
                 </div>
             </div>
-        </footer>
+        </section>
+        
+        <!-- Section fonctionnement -->
+        <section class="how-it-works" id="how-it-works">
+            <h2 class="section-title">Comment ça marche ?</h2>
+            
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Crée ton compte</h3>
+                        <p>Inscris-toi gratuitement en 2 minutes avec ton nom, email et WhatsApp.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Personnalise ta boutique</h3>
+                        <p>Ajoute tes produits, photos, descriptions et prix depuis ton espace vendeur.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Partage et vends</h3>
+                        <p>Diffuse le lien unique de ta boutique et reçois les commandes via WhatsApp.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section tarifs -->
+        <section class="pricing-section" id="pricing">
+            <h2 class="section-title">Tarifs simples et transparents</h2>
+            <p class="section-subtitle">Commence gratuitement, évolue selon tes besoins</p>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Gratuit</h3>
+                        <div class="pricing-price">
+                            <span class="price">0€</span>
+                            <span class="period">/mois</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Jusqu'à 10 produits</li>
+                        <li><i class="fas fa-check"></i> Vitrine web de base</li>
+                        <li><i class="fas fa-check"></i> Commandes via WhatsApp</li>
+                        <li><i class="fas fa-check"></i> Support email</li>
+                    </ul>
+                    <a href="?form=signup" class="pricing-button">
+                        Commencer gratuitement
+                    </a>
+                </div>
+                
+                <div class="pricing-card popular">
+                    <div class="popular-badge">Le plus populaire</div>
+                    <div class="pricing-header">
+                        <h3>Pro</h3>
+                        <div class="pricing-price">
+                            <span class="price">9,99€</span>
+                            <span class="period">/mois</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Produits illimités</li>
+                        <li><i class="fas fa-check"></i> Vitrine web premium</li>
+                        <li><i class="fas fa-check"></i> Commandes via WhatsApp</li>
+                        <li><i class="fas fa-check"></i> Statistiques détaillées</li>
+                        <li><i class="fas fa-check"></i> Support prioritaire</li>
+                    </ul>
+                    <a href="?form=signup" class="pricing-button">
+                        Choisir Pro
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section témoignages -->
+        <section class="testimonials" id="testimonials">
+            <h2 class="section-title">Ils utilisent déjà Cliq</h2>
+            
+            <div class="testimonial-container">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Avant, je passais des heures à envoyer des photos à chaque client. Maintenant, avec ma vitrine Cliq, je gagne 2 heures par jour !"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div class="author-info">
+                            <h4>Grace Makinu</h4>
+                            <p>Vendeuse de bijoux</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Mes ventes ont augmenté de 60% depuis que j'utilise Cliq. Les clients adorent pouvoir tout voir avant de me contacter."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">K</div>
+                        <div class="author-info">
+                            <h4>Kevin Kabamba</h4>
+                            <p>Vendeur de sneakers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section contact -->
+        <section class="contact-section" id="contact">
+            <h2 class="section-title">Des questions ?</h2>
+            <p class="section-subtitle">Notre équipe est là pour vous aider</p>
+            
+            <div class="contact-options">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3>WhatsApp</h3>
+                    <p>Réponse rapide</p>
+                    <a href="https://wa.me/243890076669" class="contact-link" target="_blank">
+                        Contacter sur WhatsApp
+                    </a>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Email</h3>
+                    <p>support@cliq.com</p>
+                    <a href="mailto:support@cliq.com" class="contact-link">
+                        Envoyer un email
+                    </a>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <!-- Modal de confirmation -->
-    <div class="modal" id="confirmationModal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <div class="modal-icon">
-                <i class="fas fa-check-circle"></i>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">Cliq</div>
+                <p class="footer-tagline">La vitrine web simple pour tous les vendeurs</p>
             </div>
             
-            <h2>Demande envoyée avec succès !</h2>
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>Produit</h4>
+                    <a href="#features">Fonctionnalités</a>
+                    <a href="#how-it-works">Comment ça marche</a>
+                    <a href="#pricing">Tarifs</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Support</h4>
+                    <a href="#contact">Centre d'aide</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#">FAQ</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Légal</h4>
+                    <a href="#">Confidentialité</a>
+                    <a href="#">Conditions d'utilisation</a>
+                    <a href="#">Mentions légales</a>
+                </div>
+            </div>
             
-            <p>Merci pour votre intérêt ! Notre équipe vous contactera dans les 24 heures sur WhatsApp pour finaliser la création de votre vitrine.</p>
-            
-            <p class="modal-note">Vérifiez que votre numéro WhatsApp est correct pour ne pas rater notre message.</p>
-            
-            <button class="modal-button" id="modalButton">
-                <i class="fas fa-thumbs-up"></i> Compris
-            </button>
+            <div class="footer-newsletter">
+                <h4>Restez informé</h4>
+                <p>Recevez nos conseils pour booster vos ventes</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Votre email">
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+        
+        <div class="footer-bottom">
+            <p>© 2023 Cliq. Tous droits réservés.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
 
     <script src="{% static 'js/script.js' %}"></script>
 </body>
