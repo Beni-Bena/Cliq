@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
+from datetime import timedelta
 
 class Vendor(models.Model):
     user = models.OneToOneField(
@@ -11,6 +13,7 @@ class Vendor(models.Model):
 
     shop_name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
+
     whatsapp_number = models.CharField(max_length=20)
 
     is_active = models.BooleanField(default=True)
@@ -34,6 +37,13 @@ class Vendor(models.Model):
         return self.shop_name
 
 class Product(models.Model):
+
+    class Currency(models.TextChoices):
+        CDF = "CDF", "Franc Congolais"
+        USD = "USD", "Dollar"
+        EUR = "EUR", "Euro"
+        CFA = "CFA", "Franc CFA"
+
     vendor = models.ForeignKey(
         Vendor,
         on_delete=models.CASCADE,
@@ -42,14 +52,28 @@ class Product(models.Model):
 
     name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True)
+
+    description = models.TextField(blank=True, null=True)
+
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to="products/")
+    currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default="CDF"
+    )
+
+    # Ancienne image (compatibilité données existantes)
+    image = models.ImageField(
+        upload_to="products/",
+        blank=True,
+        null=True
+    )
+
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            from django.utils.text import slugify
             base_slug = slugify(self.name)
             slug = base_slug
             count = 1
@@ -65,9 +89,16 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+    image = models.ImageField(upload_to="products/")
 
-from django.utils import timezone
-from datetime import timedelta
+    def __str__(self):
+        return f"Image - {self.product.name}"
 
 class VendorSubscription(models.Model):
 
@@ -99,12 +130,15 @@ class VendorSubscription(models.Model):
     max_products = models.IntegerField(default=5)
 
     def save(self, *args, **kwargs):
-        if self.plan == self.PRO and not self.end_date:
-            self.end_date = self.start_date + timedelta(days=30)
+
+        if self.plan == self.PRO:
+            self.max_products = 100
+            if not self.end_date:
+                self.end_date = self.start_date + timedelta(days=30)
 
         if self.plan == self.FREE:
-            self.end_date = None
             self.max_products = 5
+            self.end_date = None
 
         super().save(*args, **kwargs)
 

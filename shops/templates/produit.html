@@ -14,6 +14,8 @@
     <div class="container">
         <!-- En-tête -->
         <header class="header">
+            <div class="header-content">
+            <div class="store-info-header">
             <div class="store-info">
                 <h1 class="store-name">{{ vendor.shop_name }}</h1>
                 <div class="store-url">
@@ -22,20 +24,38 @@
                 </div>
             </div>
             
-            <div class="store-stats">
-                <div class="stat">
-                    <i class="fas fa-cube"></i>
-                    <span id="product-count">{{ products|length }} produits</span>
-                </div>
-                <a href="#ajouter-produit" class="add-product-btn">
-                    <i class="fas fa-plus"></i>
-                    Ajouter un produit
-                </a>
-                <a href="{% url 'logout' %}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Déconnexion
-                </a>
+            <!-- Stat déplacé ici pour économiser de l'espace -->
+            <div class="header-stat">
+                <i class="fas fa-cube"></i>
+                <span id="product-count">{{ products|length }} produits</span>
             </div>
+        </div>
+        
+        <!-- Ligne inférieure : Tous les boutons sur une seule ligne -->
+        <div class="store-actions">
+            <!-- Bouton pour modifier le profil -->
+            <a href="#modifier-profil" class="edit-profile-btn">
+                <i class="fas fa-user-edit"></i>
+                Modifier profil
+            </a>
+            
+            <!-- Bouton pour paiement abonnement -->
+            <a href="#paiement-abonnement" class="subscription-btn">
+                <i class="fas fa-crown"></i>
+                Abonnement
+            </a>
+            
+            <a href="#ajouter-produit" class="add-product-btn">
+                <i class="fas fa-plus"></i>
+                Ajouter produit
+            </a>
+            
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Déconnexion
+            </a>
+        </div>
+    </div>
         </header>
 
         <!-- Section produits -->
@@ -68,18 +88,45 @@
             <div class="products-grid" id="products-grid">
                 {% for product in products %}
                 <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
-                    <div class="product-image">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    <!-- Affichage des images multiples -->
+                    <div class="product-images-container">
+                        {% if product.images.all %}
+                            <div class="product-images-grid">
+                                {% for image in product.images.all %}
+                                <div class="image-wrapper">
+                                    <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}" loading="lazy">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if product.images.all|length > 4 %}
+                            <div class="image-count-badge">
+                                <i class="fas fa-images"></i>
+                                {{ product.images.all|length }} images
+                            </div>
+                            {% endif %}
+                        {% elif product.image %}
+                            <div class="single-image">
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                            </div>
+                        {% else %}
+                            <div class="no-image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Aucune image</span>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="product-info">
                         <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-description">{{ product.description|default:"" }}</p>
-                        <div class="product-price">{{ product.price }} $</div>
+                        <p class="product-description">{{ product.description|default:""|truncatechars:100 }}</p>
+                        <div class="product-price">
+                            {{ product.price }} 
+                            <span class="currency-badge">{{ product.get_currency_display }}</span>
+                        </div>
 
                         <div class="product-actions">
                             <a class="whatsapp-btn"
-                               href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit {{ product.name|urlencode }}, son prix est de {{ product.price }} $."
+                               href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit {{ product.name|urlencode }}, son prix est de {{ product.price }} {{ product.get_currency_display }}."
                                target="_blank">
                                 <i class="fab fa-whatsapp"></i>
                                 Commander
@@ -116,18 +163,70 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="prix-{{ product.id }}">Prix ($)</label>
-                                <input type="number" id="prix-{{ product.id }}" name="price" step="0.01" value="{{ product.price }}" required>
+                                <label for="prix-{{ product.id }}">Prix</label>
+                                <div class="price-currency-group">
+                                    <input
+                                        type="number"
+                                        id="prix-{{ product.id }}"
+                                        name="price"
+                                        step="0.01"
+                                        value="{{ product.price }}"
+                                        required
+                                    >
+
+                                    <select name="currency" class="currency-select">
+                                        <option value="CDF" {% if product.currency == 'CDF' %}selected{% endif %}>
+                                            CDF – Franc Congolais
+                                        </option>
+                                        <option value="USD" {% if product.currency == 'USD' %}selected{% endif %}>
+                                            USD – Dollar
+                                        </option>
+                                        <option value="EUR" {% if product.currency == 'EUR' %}selected{% endif %}>
+                                            EUR – Euro
+                                        </option>
+                                        <option value="CFA" {% if product.currency == 'CFA' %}selected{% endif %}>
+                                            CFA – Franc CFA
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
+
                             
                             <div class="form-group">
-                                <label for="image-{{ product.id }}">Image du produit</label>
-                                <div class="current-image">
-                                    <img src="{{ product.image.url }}" alt="Image actuelle" style="max-width: 100px; display: block; margin: 10px 0;">
-                                    <span>Image actuelle</span>
+                                <label>Images du produit (max 5)</label>
+                                
+                                <!-- Images existantes -->
+                                <div class="current-images-container">
+                                    {% for image in product.images.all|slice:":5" %}
+                                    <div class="current-image-item">
+                                        <img src="{{ image.image.url }}" alt="Image {{ forloop.counter }}">
+                                        <div class="image-actions">
+                                            <label class="image-checkbox">
+                                                <input type="checkbox" name="delete_images" value="{{ image.id }}">
+                                                <span>Supprimer</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% if not product.images.all and product.image %}
+                                    <div class="current-image-item">
+                                        <img src="{{ product.image.url }}" alt="Image actuelle">
+                                        <span class="current-image-label">Image actuelle</span>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                <input type="file" id="image-{{ product.id }}" name="image" accept="image/*">
-                                <small>Laisser vide pour conserver l'image actuelle</small>
+                                
+                                <!-- Upload de nouvelles images -->
+                                <div class="image-upload-container">
+                                    <label for="images-{{ product.id }}" class="image-upload-label">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Ajouter des images</span>
+                                        <small>Cliquez pour sélectionner jusqu'à 5 images</small>
+                                    </label>
+                                    <input type="file" id="images-{{ product.id }}" name="images" accept="image/*" multiple>
+                                    <div class="image-preview" id="image-preview-{{ product.id }}"></div>
+                                    <small class="help-text">Vous pouvez sélectionner plusieurs images. Formats acceptés: JPG, PNG, WebP. Max 2MB par image.</small>
+                                </div>
                             </div>
                             
                             <div class="form-actions">
@@ -193,17 +292,51 @@
                     
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="3"></textarea>
+                        <textarea id="description" name="description" rows="3" placeholder="Décrivez votre produit..."></textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label for="prix">Prix ($)</label>
-                        <input type="number" id="prix" name="price" step="0.01" required>
+                        <label for="prix-{{ product.id }}">Prix</label>
+                        <div class="price-currency-group">
+                            <input
+                                type="number"
+                                id="prix-{{ product.id }}"
+                                name="price"
+                                step="0.01"
+                                value="{{ product.price }}"
+                                required
+                            >
+
+                            <select name="currency" class="currency-select">
+                                <option value="CDF" {% if product.currency == 'CDF' %}selected{% endif %}>
+                                    CDF – Franc Congolais
+                                </option>
+                                <option value="USD" {% if product.currency == 'USD' %}selected{% endif %}>
+                                    USD – Dollar
+                                </option>
+                                <option value="EUR" {% if product.currency == 'EUR' %}selected{% endif %}>
+                                    EUR – Euro
+                                </option>
+                                <option value="CFA" {% if product.currency == 'CFA' %}selected{% endif %}>
+                                    CFA – Franc CFA
+                                </option>
+                            </select>
+                        </div>
                     </div>
+
                     
                     <div class="form-group">
-                        <label for="image">Image du produit</label>
-                        <input type="file" id="image" name="image" accept="image/*" required>
+                        <label for="images">Images du produit (jusqu'à 5)</label>
+                        <div class="image-upload-container">
+                            <label for="images" class="image-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Cliquez pour sélectionner des images</span>
+                                <small>Sélectionnez jusqu'à 5 images pour votre produit</small>
+                            </label>
+                            <input type="file" id="images" name="images" accept="image/*" multiple required>
+                            <div class="image-preview" id="image-preview"></div>
+                            <small class="help-text">Formats acceptés: JPG, PNG, WebP. Max 2MB par image.</small>
+                        </div>
                     </div>
                     
                     <div class="form-actions">
@@ -211,6 +344,166 @@
                         <a href="#" class="btn-secondary">Annuler</a>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal de modification du profil -->
+        <div id="modifier-profil" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Modifier le profil</h3>
+                    <a href="#" class="modal-close">&times;</a>
+                </div>
+                <form method="POST" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="shop_name">Nom de la boutique</label>
+                        <input type="text" id="shop_name" name="shop_name" value="{{ vendor.shop_name }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="slug">URL de la boutique</label>
+                        <div class="url-input-group">
+                            <span class="url-prefix">cliq.com/@</span>
+                            <input type="text" id="slug" name="slug" value="{{ vendor.slug }}" required pattern="[a-zA-Z0-9-]+">
+                        </div>
+                        <small class="help-text">Utilisez uniquement des lettres, chiffres et tirets</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp_number">Numéro WhatsApp</label>
+                        <input type="tel" id="whatsapp_number" name="whatsapp_number" value="{{ vendor.whatsapp_number }}" required placeholder="+221771234567">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="{{ vendor.email }}" required>
+                    </div>
+                    
+                    <!-- Section pour la confirmation par mot de passe -->
+                    <div class="password-confirmation">
+                        <h4>Confirmation par mot de passe</h4>
+                        <div class="form-group">
+                            <label for="current_password">Mot de passe actuel</label>
+                            <input type="password" id="current_password" name="current_password" required>
+                            <small class="help-text">Entrez votre mot de passe actuel pour confirmer les modifications</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            Enregistrer les modifications
+                        </button>
+                        <a href="#" class="btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal pour le paiement d'abonnement -->
+        <div id="paiement-abonnement" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Abonnement Premium</h3>
+                    <a href="#" class="modal-close">&times;</a>
+                </div>
+                <div class="subscription-plans">
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h4>Gratuit</h4>
+                            <div class="plan-price">
+                                <span class="price">0 F CFA</span>
+                                <span class="period">/mois</span>
+                            </div>
+                        </div>
+                        <div class="plan-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i> Jusqu'à 10 produits</li>
+                                <li><i class="fas fa-check"></i> 1 image par produit</li>
+                                <li><i class="fas fa-check"></i> Boutique publique</li>
+                                <li><i class="fas fa-times"></i> <del>Statistiques avancées</del></li>
+                                <li><i class="fas fa-times"></i> <del>Support prioritaire</del></li>
+                            </ul>
+                        </div>
+                        <div class="plan-actions">
+                            <span class="current-plan">Plan actuel</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-card premium">
+                        <div class="plan-badge">Recommandé</div>
+                        <div class="plan-header">
+                            <h4>Premium</h4>
+                            <div class="plan-price">
+                                <span class="price">5 000 F CFA</span>
+                                <span class="period">/mois</span>
+                            </div>
+                        </div>
+                        <div class="plan-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i> Produits illimités</li>
+                                <li><i class="fas fa-check"></i> 5 images par produit</li>
+                                <li><i class="fas fa-check"></i> Boutique publique</li>
+                                <li><i class="fas fa-check"></i> Statistiques avancées</li>
+                                <li><i class="fas fa-check"></i> Support prioritaire</li>
+                                <li><i class="fas fa-check"></i> Nom de domaine personnalisé</li>
+                            </ul>
+                        </div>
+                        <div class="plan-actions">
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="premium">
+                                <input type="hidden" name="amount" value="5000">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-credit-card"></i>
+                                    Souscrire
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h4>Business</h4>
+                            <div class="plan-price">
+                                <span class="price">10 000 F CFA</span>
+                                <span class="period">/mois</span>
+                            </div>
+                        </div>
+                        <div class="plan-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i> Toutes les fonctionnalités Premium</li>
+                                <li><i class="fas fa-check"></i> Multiples vendeurs</li>
+                                <li><i class="fas fa-check"></i> API d'intégration</li>
+                                <li><i class="fas fa-check"></i> Rapports détaillés</li>
+                                <li><i class="fas fa-check"></i> Formation dédiée</li>
+                            </ul>
+                        </div>
+                        <div class="plan-actions">
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="business">
+                                <input type="hidden" name="amount" value="10000">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-credit-card"></i>
+                                    Souscrire
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="payment-methods">
+                    <h4>Méthodes de paiement acceptées</h4>
+                    <div class="payment-icons">
+                        <i class="fab fa-cc-visa" title="Visa"></i>
+                        <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                        <i class="fab fa-cc-paypal" title="PayPal"></i>
+                        <i class="fas fa-mobile-alt" title="Mobile Money"></i>
+                        <i class="fas fa-university" title="Virement bancaire"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -223,7 +516,7 @@
                 </div>
                 
                 <div class="footer-contact">
-                    <a href="{% url 'shop' vendor.slug %}" class="contact-btn">
+                    <a href="{% url 'shop' vendor.slug %}" class="contact-btn" target="_blank">
                         <i class="fas fa-store"></i>
                         Voir la boutique publique
                     </a>
@@ -236,7 +529,130 @@
         </footer>
     </div>
 
-    <!-- Scripts -->
-    <script src="{% static 'js/shop.js' %}"></script>
+    <!-- Ajout du JavaScript pour le carrousel d'images -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du carrousel d'images
+            document.querySelectorAll('.product-image-carousel').forEach(carousel => {
+                const slides = carousel.querySelectorAll('.product-image-slide');
+                const dots = carousel.querySelectorAll('.dot');
+                
+                if (slides.length > 1) {
+                    let currentSlide = 0;
+                    
+                    function showSlide(index) {
+                        slides.forEach(slide => slide.classList.remove('active'));
+                        dots.forEach(dot => dot.classList.remove('active'));
+                        
+                        slides[index].classList.add('active');
+                        if (dots[index]) dots[index].classList.add('active');
+                        currentSlide = index;
+                    }
+                    
+                    // Ajout des événements sur les dots
+                    dots.forEach((dot, index) => {
+                        dot.addEventListener('click', () => {
+                            showSlide(index);
+                        });
+                    });
+                    
+                    // Rotation automatique (optionnel)
+                    setInterval(() => {
+                        let nextSlide = (currentSlide + 1) % slides.length;
+                        showSlide(nextSlide);
+                    }, 5000);
+                    
+                    // Initialisation
+                    showSlide(0);
+                }
+            });
+            
+            // Gestion de la recherche
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search');
+            const resetSearchBtn = document.getElementById('reset-search');
+            const noProductsMessage = document.getElementById('no-products-message');
+            const productCards = document.querySelectorAll('.product-card');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    let visibleCount = 0;
+                    
+                    productCards.forEach(card => {
+                        const name = card.dataset.name.toLowerCase();
+                        const description = card.dataset.description.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || description.includes(searchTerm)) {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // Afficher/masquer le message "aucun produit"
+                    if (searchTerm && visibleCount === 0) {
+                        noProductsMessage.style.display = 'block';
+                    } else {
+                        noProductsMessage.style.display = 'none';
+                    }
+                    
+                    // Afficher/masquer le bouton de suppression de recherche
+                    clearSearchBtn.style.display = searchTerm ? 'flex' : 'none';
+                });
+                
+                // Bouton de suppression de recherche
+                clearSearchBtn.addEventListener('click', function() {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                    searchInput.focus();
+                });
+                
+                // Bouton de réinitialisation de recherche
+                if (resetSearchBtn) {
+                    resetSearchBtn.addEventListener('click', function() {
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('input'));
+                    });
+                }
+            }
+            
+            // Gestion de l'upload d'images avec prévisualisation
+            document.querySelectorAll('input[type="file"][multiple]').forEach(input => {
+                const previewId = input.id.replace('images', 'image-preview');
+                const preview = document.getElementById(previewId) || document.getElementById('image-preview');
+                
+                if (preview) {
+                    input.addEventListener('change', function() {
+                        preview.innerHTML = '';
+                        const files = Array.from(this.files);
+                        
+                        files.slice(0, 5).forEach(file => {
+                            if (file.type.match('image.*')) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const img = document.createElement('img');
+                                    img.src = e.target.result;
+                                    preview.appendChild(img);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+                        
+                        // Afficher un avertissement si plus de 5 fichiers
+                        if (files.length > 5) {
+                            const warning = document.createElement('p');
+                            warning.textContent = `Seulement les 5 premières images seront conservées (${files.length} sélectionnées)`;
+                            warning.style.color = '#dc3545';
+                            warning.style.fontSize = '0.875rem';
+                            warning.style.marginTop = '10px';
+                            preview.appendChild(warning);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

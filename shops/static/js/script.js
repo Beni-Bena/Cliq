@@ -1,113 +1,80 @@
-// -----------------------------
-// Gestion des formulaires
-// -----------------------------
-
-// Sélection des éléments
-const signupChoice = document.getElementById('signupChoice');
-const loginChoice = document.getElementById('loginChoice');
-const signupForm = document.getElementById('signupForm');
-const loginForm = document.getElementById('loginForm');
-const loginBtn = document.getElementById('loginBtn');
-const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+// Menu mobile
 const menuToggle = document.getElementById('menuToggle');
-const mobileNav = document.getElementById('mobileNav');
+const closeMenu = document.getElementById('closeMenu');
+const mobileMenu = document.getElementById('mobileMenu');
 
-// -----------------------------
-// Changer entre inscription et connexion
-// -----------------------------
-function showSignupForm() {
-    if (signupChoice && loginChoice && signupForm && loginForm) {
-        signupChoice.classList.add('active');
-        loginChoice.classList.remove('active');
-        signupForm.style.display = 'block';
-        loginForm.style.display = 'none';
-    }
-}
-
-function showLoginForm() {
-    if (loginChoice && signupChoice && loginForm && signupForm) {
-        loginChoice.classList.add('active');
-        signupChoice.classList.remove('active');
-        loginForm.style.display = 'block';
-        signupForm.style.display = 'none';
-    }
-}
-
-if (signupChoice && loginChoice) {
-    signupChoice.addEventListener('click', showSignupForm);
-    loginChoice.addEventListener('click', showLoginForm);
-}
-
-if (loginBtn) {
-    loginBtn.addEventListener('click', showLoginForm);
-}
-
-if (mobileLoginBtn) {
-    mobileLoginBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        showLoginForm();
-        if (mobileNav) mobileNav.classList.remove('active');
+if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
     });
 }
 
-// -----------------------------
-// Validation basique côté client
-// -----------------------------
-function validateSignupForm() {
-    const password = document.getElementById("password")?.value;
-    const confirmPassword = document.getElementById("confirmPassword")?.value;
-    const terms = document.getElementById("terms")?.checked;
-
-    if (password !== confirmPassword) {
-        alert("Les mots de passe ne correspondent pas.");
-        return false;
-    }
-
-    if (!terms) {
-        alert("Veuillez accepter les conditions d'utilisation.");
-        return false;
-    }
-
-    return true;
-}
-
-// -----------------------------
-// Gestion du menu mobile
-// -----------------------------
-if (menuToggle && mobileNav) {
-    menuToggle.addEventListener('click', function() {
-        mobileNav.classList.toggle('active');
-    });
-
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            mobileNav.classList.remove('active');
-        });
+if (closeMenu) {
+    closeMenu.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = 'auto';
     });
 }
 
-// -----------------------------
-// Gestion des modals (optionnel)
-// -----------------------------
-const modalClose = document.getElementById('modalClose');
-const modalButton = document.getElementById('modalButton');
-
-if (modalClose) {
-    modalClose.addEventListener('click', function() {
-        document.getElementById('confirmationModal').style.display = 'none';
-    });
-}
-
-if (modalButton) {
-    modalButton.addEventListener('click', function() {
-        document.getElementById('confirmationModal').style.display = 'none';
-    });
-}
-
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('confirmationModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
+// Fermer le menu en cliquant à l'extérieur
+document.addEventListener('click', (e) => {
+    if (!mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = 'auto';
     }
 });
+
+// Fermer le menu avec la touche Échap
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// Navigation fluide pour les ancres
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        if (this.getAttribute('href') === '#') return;
+        
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            // Fermer le menu mobile si ouvert
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Scroll fluide
+            window.scrollTo({
+                top: targetElement.offsetTop - 80,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+
+// Animation au scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+        }
+    });
+}, observerOptions);
+
+// Observer les éléments à animer
+document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card').forEach(el => {
+    observer.observe(el);
+});
+

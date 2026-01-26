@@ -7,7 +7,9 @@ from .models import Vendor
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from .models import Vendor, Product
+from .models import Vendor, Product,ProductImage
+from decimal import Decimal
+
 
 
 # Create your views here.
@@ -100,6 +102,8 @@ def register(request):
     # Si GET, retourne à l'accueil
     return redirect('index')
 
+
+
 def login(request):
     if request.method == 'POST':
         username_or_whatsapp = request.POST.get('username')
@@ -143,6 +147,8 @@ def login(request):
 
     return redirect('index')
 
+
+
 @login_required
 def vendor_dashboard(request):
     try:
@@ -165,10 +171,11 @@ def vendor_dashboard(request):
     })
 
 
+
+
 def logout_view(request):
     logout(request)
     return redirect('index')
-
 
 
 
@@ -179,68 +186,110 @@ def add_product(request):
         name = request.POST.get("name", "").strip()
         description = request.POST.get("description", "").strip()
         price = request.POST.get("price")
-        image = request.FILES.get("image")
+        currency = request.POST.get("currency")
 
-        # Sécurité minimale
-        if not all([name, price, image]):
+        images = request.FILES.getlist("images")  
+
+        if not all([name, price, currency]):
             messages.error(request, "Tous les champs obligatoires doivent être remplis.")
-            return redirect("add_product")
+            return redirect("vendor_dashboard")
+
+        if len(images) == 0:
+            messages.error(request, "Veuillez ajouter au moins une image.")
+            return redirect("vendor_dashboard")
+
+        if len(images) > 5:
+            messages.error(request, "Maximum 5 images autorisées.")
+            return redirect("vendor_dashboard")
 
         product = Product.objects.create(
             vendor=request.user.vendor,
             name=name,
+            description=description,
             price=price,
-            image=image
+            currency=currency
         )
-
-        # Si le champ existe dans ton modèle
-        if hasattr(product, "description"):
-            product.description = description
-            product.save()
+        for img in images:
+            ProductImage.objects.create(
+                product=product,
+                image=img
+            )
 
         messages.success(request, "Produit ajouté avec succès.")
         return redirect("vendor_dashboard")
 
-    return render(request, "products/add_product.html")
 
+
+@login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    if product.vendor.user != request.user:
+        messages.error(request, "Accès non autorisé.")
+        return redirect("vendor_dashboard")
 
     if request.method == "POST":
+
+        modified = False
+
         # -------- TEXT FIELDS --------
         name = request.POST.get("name", "").strip()
         description = request.POST.get("description", "").strip()
-        price = request.POST.get("price", "").strip()
+        price = request.POST.get("price")
+        currency = request.POST.get("currency")
 
-        # -------- IMAGE --------
-        image = request.FILES.get("image")
-
-        modified = False  # pour savoir s'il y a eu modification
-
-        # Nom
         if name and name != product.name:
             product.name = name
             modified = True
 
-        # Description (si ton modèle l'a)
-        if hasattr(product, "description"):
-            if description != product.description:
-                product.description = description
-                modified = True
-
-        # Prix
-        if price:
-            price = float(price)
-            if price != product.price:
-                product.price = price
-                modified = True
-
-        # Image (uniquement si l'utilisateur a choisi une nouvelle)
-        if image:
-            product.image = image
+        if description != (product.description or ""):
+            product.description = description
             modified = True
 
-        # -------- SAUVEGARDE --------
+        if price:
+            try:
+                price = float(price)
+                if price != float(product.price):
+                    product.price = price
+                    modified = True
+            except ValueError:
+                messages.error(request, "Prix invalide.")
+                return redirect("vendor_dashboard")
+
+        if currency and currency != product.currency:
+            product.currency = currency
+            modified = True
+
+        # -------- DELETE IMAGES --------
+        delete_images = request.POST.getlist("delete_images")
+        if delete_images:
+            ProductImage.objects.filter(
+                id__in=delete_images,
+                product=product
+            ).delete()
+            modified = True
+
+        # -------- ADD NEW IMAGES --------
+        new_images = request.FILES.getlist("images")
+
+        if new_images:
+            existing_count = product.images.count()
+            available_slots = 5 - existing_count
+
+            if available_slots <= 0:
+                messages.error(request, "Nombre maximum d’images atteint (5).")
+                return redirect("vendor_dashboard")
+
+            for img in new_images[:available_slots]:
+                ProductImage.objects.create(
+                    product=product,
+                    image=img
+                )
+                modified = True
+
+            if product.image:
+                product.image = None
+
+        # -------- SAVE --------
         if modified:
             product.save()
             messages.success(request, "Produit modifié avec succès.")
@@ -268,6 +317,52 @@ def delete_product(request, product_id):
 
     messages.error(request, "Action non autorisée.")
     return redirect("vendor_dashboard")
+
+
+
+@login_required
+def update_profile(request):
+    user = request.user
+
+    try:
+        vendor = user.vendor
+    except Vendor.DoesNotExist:
+        messages.error(request, "Profil vendeur introuvable.")
+        return redirect("home")
+
+    if request.method == "POST":
+        # 🔐 Vérification du mot de passe
+        current_password = request.POST.get("current_password")
+
+        if not user.check_password(current_password):
+            messages.error(request, "Mot de passe incorrect.")
+            return redirect("update_profile")
+
+        # 📦 Données valides selon le modèle
+        shop_name = request.POST.get("shop_name")
+        whatsapp_number = request.POST.get("whatsapp_number")
+        email = request.POST.get("email")
+
+        if not shop_name or not whatsapp_number:
+            messages.error(request, "Veuillez remplir tous les champs obligatoires.")
+            return redirect("update_profile")
+
+        # 🏪 Mise à jour Vendor
+        vendor.shop_name = shop_name
+        vendor.whatsapp_number = whatsapp_number
+        vendor.save()
+
+        # 👤 Mise à jour User
+        if email:
+            user.email = email
+            user.save()
+
+        messages.success(request, "Profil mis à jour avec succès.")
+        return redirect("update_profile")
+
+    return render(request, "shops/update_profile.html", {
+        "vendor": vendor
+    })
 
 
 

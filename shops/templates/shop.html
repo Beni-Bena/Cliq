@@ -10,29 +10,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <!-- En-tête -->
-        <header class="header">
-            <div class="store-info">
-                <h1 class="store-name">{{ vendor.shop_name }}</h1>
-                <div class="store-url">
-                    <i class="fas fa-link"></i>
-                    <span>cliq.com/@{{ vendor.slug }}</span>
+    <!-- En-tête pleine largeur -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-main">
+                <div class="store-brand">
+                    <h1 class="store-name">{{ vendor.shop_name }}</h1>
+                    <p class="store-tagline">Boutique en ligne professionnelle</p>
+                    
+                    <div class="store-url-container">
+                        <a href="{% url 'shop' vendor.slug %}" class="store-url-badge" target="_blank">
+                            <i class="fas fa-link"></i>
+                            <span class="store-url-text">cliq.com/</span>
+                            <span class="store-url-domain">@{{ vendor.slug }}</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="store-stats">
+                    <div class="stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="product-count">{{ products.count }}</div>
+                            <div class="stat-label">Produits</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">4.8</div>
+                            <div class="stat-label">Note clients</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="store-stats">
-                <div class="stat">
-                    <i class="fas fa-cube"></i>
-                    <span id="product-count">{{ products|length }} produits</span>
-                </div>
-                <div class="stat">
-                    <i class="fas fa-star"></i>
-                    <span>4.8/5</span>
-                </div>
-            </div>
-        </header>
+        </div>
+    </header>
 
+    <div class="container">
         <!-- Section produits -->
         <main class="products">
             <div class="products-header">
@@ -62,24 +82,62 @@
             <!-- Grille de produits -->
             <div class="products-grid" id="products-grid">
                 {% for product in products %}
+                {% if product.is_available %}
+                {% with product_images=product.images.all %}
+                {% with first_image=product_images.0.image.url|default:product.image.url|default:'' %}
                 <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
-                    <div class="product-image">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    <div class="product-image-container" id="image-container-{{ product.id }}">
+                        {% if product_images %}
+                            {% for image in product_images %}
+                            <img src="{{ image.image.url }}" 
+                                 alt="{{ product.name }}" 
+                                 class="product-image {% if forloop.first %}active{% endif %}" 
+                                 data-index="{{ forloop.counter0 }}"
+                                 loading="lazy">
+                            {% endfor %}
+                            
+                            {% if product_images|length > 1 %}
+                            <button class="image-nav prev" onclick="prevImage({{ product.id }})">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="image-nav next" onclick="nextImage({{ product.id }})">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="image-dots">
+                                {% for image in product_images %}
+                                <div class="image-dot {% if forloop.first %}active{% endif %}" 
+                                     onclick="showImage({{ product.id }}, {{ forloop.counter0 }})"></div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        {% elif product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image active" loading="lazy">
+                        {% else %}
+                            <div class="product-image-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="product-info">
                         <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-description">{{ product.description|default:"" }}</p>
-                        <div class="product-price">{{ product.price }} $</div>
+                        <p class="product-description">{{ product.description|default:""|truncatechars:100 }}</p>
+                        <div class="product-price">
+                            {{ product.price }} 
+                            <span class="currency-badge">{{ product.get_currency_display }}</span>
+                        </div>
 
                         <a class="whatsapp-btn"
-                           href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit {{ product.name|urlencode }}, son prix est de {{ product.price }} $."
+                           href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit '{{ product.name|urlencode }}', son prix est de {{ product.price }} {{ product.get_currency_display }}."
                            target="_blank">
                             <i class="fab fa-whatsapp"></i>
                             Commander
                         </a>
                     </div>
                 </div>
+                {% endwith %}
+                {% endwith %}
+                {% endif %}
                 {% empty %}
                 <div class="empty-state">
                     <i class="fas fa-shopping-bag"></i>
@@ -125,7 +183,7 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <h3>{{ vendor.shop_name }}</h3>
-                    <p>Boutique en ligne</p>
+                    <p>Boutique en ligne professionnelle</p>
                 </div>
                 
                 <div class="footer-contact">
@@ -148,5 +206,55 @@
     </a>
 
     <script src="{% static 'js/shop.js' %}"></script>
+    <script>
+        // Fonctions pour la navigation d'images
+        function showImage(productId, index) {
+            const container = document.getElementById(`image-container-${productId}`);
+            if (!container) return;
+            
+            const images = container.querySelectorAll('.product-image');
+            const dots = container.querySelectorAll('.image-dot');
+            
+            images.forEach(img => img.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            if (images[index]) images[index].classList.add('active');
+            if (dots[index]) dots[index].classList.add('active');
+        }
+        
+        function nextImage(productId) {
+            const container = document.getElementById(`image-container-${productId}`);
+            if (!container) return;
+            
+            const images = container.querySelectorAll('.product-image');
+            const currentIndex = Array.from(images).findIndex(img => img.classList.contains('active'));
+            const nextIndex = (currentIndex + 1) % images.length;
+            
+            showImage(productId, nextIndex);
+        }
+        
+        function prevImage(productId) {
+            const container = document.getElementById(`image-container-${productId}`);
+            if (!container) return;
+            
+            const images = container.querySelectorAll('.product-image');
+            const currentIndex = Array.from(images).findIndex(img => img.classList.contains('active'));
+            const prevIndex = (currentIndex - 1 + images.length) % images.length;
+            
+            showImage(productId, prevIndex);
+        }
+        
+        // Initialisation du carrousel pour chaque produit avec plusieurs images
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.product-image-container').forEach(container => {
+                const images = container.querySelectorAll('.product-image');
+                if (images.length > 1) {
+                    // Démarrer avec la première image
+                    const productId = container.id.split('-')[2];
+                    showImage(productId, 0);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
