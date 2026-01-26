@@ -1,0 +1,392 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Abonnement - Cliq</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007AFF, #0056CC);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .step {
+            margin-bottom: 25px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #007AFF;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-description {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-left: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .orange-money-details {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .orange-money-details p {
+            margin-bottom: 8px;
+            color: #5D4037;
+            font-size: 14px;
+        }
+
+        .orange-money-details strong {
+            color: #E65100;
+        }
+
+        .whatsapp-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-btn:active {
+            transform: translateY(0);
+        }
+
+        .whatsapp-btn i {
+            font-size: 22px;
+        }
+
+        .disclaimer {
+            margin-top: 25px;
+            padding: 15px;
+            background: #F5F5F5;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: #007AFF;
+        }
+
+        .logo span {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-crown"></i>
+                <span>Cliq</span>
+            </div>
+            <h1>Abonnement Premium</h1>
+            <p>Activez votre boutique en quelques étapes</p>
+        </div>
+        
+        <div class="content">
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    Effectuez le paiement
+                </div>
+                <div class="step-description">
+                    Transférez <strong>10.000 FCFA</strong> via Orange Money au numéro ci-dessous :
+                </div>
+            </div>
+            
+            <div class="orange-money-details">
+                <p><strong>Numéro Orange Money :</strong> <span id="agent-number">07 89 45 12 34</span></p>
+                <p><strong>Nom du bénéficiaire :</strong> Cliq Business</p>
+                <p><strong>Montant :</strong> 10.000 FCFA</p>
+                <p><strong>Référence :</strong> ABO-<span id="shop-name-ref">VOTREBOUTIQUE</span></p>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    Confirmez votre paiement
+                </div>
+                <div class="step-description">
+                    Remplissez le formulaire ci-dessous pour confirmer votre paiement via WhatsApp
+                </div>
+            </div>
+            
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="shopName">Nom de votre boutique</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-store"></i>
+                        <input type="text" id="shopName" placeholder="Ex: Ma Belle Boutique" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">Votre numéro Orange Money</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phoneNumber" placeholder="Ex: 07 12 34 56 78" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transactionId">Numéro de transaction Orange Money</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-receipt"></i>
+                        <input type="text" id="transactionId" placeholder="Ex: 5A6B7C8D" required>
+                    </div>
+                    <small style="color: #666; font-size: 13px; margin-top: 5px; display: block;">
+                        Trouvez ce numéro dans l'historique de votre transaction Orange Money
+                    </small>
+                </div>
+                
+                <button type="button" class="whatsapp-btn" id="whatsappBtn">
+                    <i class="fab fa-whatsapp"></i>
+                    Confirmer via WhatsApp
+                </button>
+                
+                <div class="disclaimer">
+                    <p><strong>Important :</strong> Votre abonnement sera activé manuellement par notre équipe après vérification du paiement. Vous recevrez une confirmation dans les 24 heures.</p>
+                    <p style="margin-top: 8px;">En cas de problème, contactez le support au <strong>07 89 45 12 34</strong></p>
+                </div>
+                
+                <a href="{% url 'vendor_dashboard' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour à ma boutique
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mettre à jour la référence avec le nom de la boutique
+            const shopNameInput = document.getElementById('shopName');
+            const shopNameRef = document.getElementById('shop-name-ref');
+            
+            shopNameInput.addEventListener('input', function() {
+                const shopName = this.value.trim().toUpperCase().replace(/\s+/g, '');
+                shopNameRef.textContent = shopName || 'VOTREBOUTIQUE';
+            });
+            
+            // Gérer le clic sur le bouton WhatsApp
+            document.getElementById('whatsappBtn').addEventListener('click', function() {
+                const shopName = document.getElementById('shopName').value.trim();
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                const transactionId = document.getElementById('transactionId').value.trim();
+                
+                // Validation simple
+                if (!shopName || !phoneNumber || !transactionId) {
+                    alert('Veuillez remplir tous les champs avant de continuer.');
+                    return;
+                }
+                
+                // Numéro WhatsApp du support (à modifier selon votre numéro)
+                const whatsappNumber = "2250700000000"; // Exemple pour la Côte d'Ivoire
+                
+                // Message prédéfini
+                const message = `Bonjour, je viens de payer mon abonnement Cliq Premium.
+                
+📋 Détails du paiement :
+• Boutique : ${shopName}
+• Numéro Orange Money : ${phoneNumber}
+• Transaction ID : ${transactionId}
+• Montant : 10.000 FCFA
+• Référence : ABO-${shopName.toUpperCase().replace(/\s+/g, '')}
+
+Veuillez activer mon abonnement Premium. Merci !`;
+                
+                // Encoder le message pour l'URL
+                const encodedMessage = encodeURIComponent(message);
+                
+                // Créer le lien WhatsApp
+                const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+                
+                // Ouvrir WhatsApp dans un nouvel onglet
+                window.open(whatsappURL, '_blank');
+                
+                // Réinitialiser le formulaire (optionnel)
+                document.getElementById('paymentForm').reset();
+                shopNameRef.textContent = 'VOTREBOUTIQUE';
+                
+                // Afficher un message de confirmation
+                alert('WhatsApp va s\'ouvrir. Veuillez envoyer le message pré-rempli pour finaliser votre demande d\'abonnement.');
+            });
+            
+            
+            
+            // Formater automatiquement le numéro de téléphone
+            document.getElementById('phoneNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 0) {
+                    value = value.match(/.{1,2}/g).join(' ');
+                }
+                
+                e.target.value = value;
+            });
+        });
+    </script>
+</body>
+</html>

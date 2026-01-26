@@ -90,20 +90,24 @@
                 <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
                     <!-- Affichage des images multiples -->
                     <div class="product-images-container">
-                        {% if product.images.all %}
+                        {% if product.images.exists %}
+                            {% with total_images=product.images.all|length %}
                             <div class="product-images-grid">
-                                {% for image in product.images.all %}
-                                <div class="image-wrapper">
-                                    <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}" loading="lazy">
-                                </div>
+                                {% for image in product.images.all|slice:":5" %}
+                                    {% if image.image %}
+                                    <div class="image-wrapper">
+                                        <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}" loading="lazy">
+                                    </div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
-                            {% if product.images.all|length > 4 %}
+                            {% if total_images > 5 %}
                             <div class="image-count-badge">
                                 <i class="fas fa-images"></i>
-                                {{ product.images.all|length }} images
+                                +{{ total_images|add:"-5" }}
                             </div>
                             {% endif %}
+                            {% endwith %}
                         {% elif product.image %}
                             <div class="single-image">
                                 <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
@@ -413,7 +417,7 @@
                         <div class="plan-header">
                             <h4>Gratuit</h4>
                             <div class="plan-price">
-                                <span class="price">0 F CFA</span>
+                                <span class="price">0 CDF</span>
                                 <span class="period">/mois</span>
                             </div>
                         </div>
@@ -422,8 +426,6 @@
                                 <li><i class="fas fa-check"></i> Jusqu'à 10 produits</li>
                                 <li><i class="fas fa-check"></i> 1 image par produit</li>
                                 <li><i class="fas fa-check"></i> Boutique publique</li>
-                                <li><i class="fas fa-times"></i> <del>Statistiques avancées</del></li>
-                                <li><i class="fas fa-times"></i> <del>Support prioritaire</del></li>
                             </ul>
                         </div>
                         <div class="plan-actions">
@@ -436,7 +438,7 @@
                         <div class="plan-header">
                             <h4>Premium</h4>
                             <div class="plan-price">
-                                <span class="price">5 000 F CFA</span>
+                                <span class="price">5 000 CDF</span>
                                 <span class="period">/mois</span>
                             </div>
                         </div>
@@ -445,46 +447,13 @@
                                 <li><i class="fas fa-check"></i> Produits illimités</li>
                                 <li><i class="fas fa-check"></i> 5 images par produit</li>
                                 <li><i class="fas fa-check"></i> Boutique publique</li>
-                                <li><i class="fas fa-check"></i> Statistiques avancées</li>
-                                <li><i class="fas fa-check"></i> Support prioritaire</li>
-                                <li><i class="fas fa-check"></i> Nom de domaine personnalisé</li>
                             </ul>
                         </div>
                         <div class="plan-actions">
-                            <form method="POST" action="">
+                            <form method="POST" action="{% url 'abonnement' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="plan" value="premium">
                                 <input type="hidden" name="amount" value="5000">
-                                <button type="submit" class="btn-primary">
-                                    <i class="fas fa-credit-card"></i>
-                                    Souscrire
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <div class="plan-card">
-                        <div class="plan-header">
-                            <h4>Business</h4>
-                            <div class="plan-price">
-                                <span class="price">10 000 F CFA</span>
-                                <span class="period">/mois</span>
-                            </div>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Toutes les fonctionnalités Premium</li>
-                                <li><i class="fas fa-check"></i> Multiples vendeurs</li>
-                                <li><i class="fas fa-check"></i> API d'intégration</li>
-                                <li><i class="fas fa-check"></i> Rapports détaillés</li>
-                                <li><i class="fas fa-check"></i> Formation dédiée</li>
-                            </ul>
-                        </div>
-                        <div class="plan-actions">
-                            <form method="POST" action="">
-                                {% csrf_token %}
-                                <input type="hidden" name="plan" value="business">
-                                <input type="hidden" name="amount" value="10000">
                                 <button type="submit" class="btn-primary">
                                     <i class="fas fa-credit-card"></i>
                                     Souscrire

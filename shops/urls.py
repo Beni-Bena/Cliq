@@ -16,6 +16,7 @@ urlpatterns = [
     path("product/<int:product_id>/edit/", views.edit_product, name="edit_product"), 
     path("product/<int:product_id>/delete/",views.delete_product,name="delete_product"),
     path("update_profile/", views.update_profile, name="update_profile"),
+    path("abonnement/", views.abonnement, name="abonnement"),
     ]
 
 if settings.DEBUG:

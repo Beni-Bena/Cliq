@@ -82,69 +82,67 @@
             <!-- Grille de produits -->
             <div class="products-grid" id="products-grid">
                 {% for product in products %}
-                {% if product.is_available %}
-                {% with product_images=product.images.all %}
-                {% with first_image=product_images.0.image.url|default:product.image.url|default:'' %}
-                <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
-                    <div class="product-image-container" id="image-container-{{ product.id }}">
-                        {% if product_images %}
-                            {% for image in product_images %}
-                            <img src="{{ image.image.url }}" 
-                                 alt="{{ product.name }}" 
-                                 class="product-image {% if forloop.first %}active{% endif %}" 
-                                 data-index="{{ forloop.counter0 }}"
-                                 loading="lazy">
-                            {% endfor %}
-                            
-                            {% if product_images|length > 1 %}
-                            <button class="image-nav prev" onclick="prevImage({{ product.id }})">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button class="image-nav next" onclick="nextImage({{ product.id }})">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                            <div class="image-dots">
-                                {% for image in product_images %}
-                                <div class="image-dot {% if forloop.first %}active{% endif %}" 
-                                     onclick="showImage({{ product.id }}, {{ forloop.counter0 }})"></div>
-                                {% endfor %}
+                    {% if product.is_available %}
+                        <div class="product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|default:''|lower }}">
+                            <div class="product-images-container">
+                                {% if product.images.exists %}
+                                    <div class="product-images-grid">
+                                        {% for image in product.images.all|slice:":5" %}
+                                            {% if image.image %}
+                                            <div class="image-wrapper">
+                                                <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}" loading="lazy">
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% if product.images.all|length > 4 %}
+                                    <div class="image-count-badge">
+                                        <i class="fas fa-images"></i>
+                                        {{ product.images.all|length }} images
+                                    </div>
+                                    {% endif %}
+                                {% elif product.image %}
+                                    <div class="single-image">
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                                    </div>
+                                {% else %}
+                                    <div class="no-image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        <span>Aucune image</span>
+                                    </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                        {% elif product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image active" loading="lazy">
-                        {% else %}
-                            <div class="product-image-placeholder">
-                                <i class="fas fa-image"></i>
-                            </div>
-                        {% endif %}
-                    </div>
 
-                    <div class="product-info">
-                        <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-description">{{ product.description|default:""|truncatechars:100 }}</p>
-                        <div class="product-price">
-                            {{ product.price }} 
-                            <span class="currency-badge">{{ product.get_currency_display }}</span>
+                            <!-- Infos produit -->
+                            <div class="product-info">
+                                <h3 class="product-name">{{ product.name }}</h3>
+                                <p class="product-description">{{ product.description|default:""|truncatechars:100 }}</p>
+                                <div class="product-price">
+                                    {{ product.price }} 
+                                    <span class="currency-badge">{{ product.get_currency_display }}</span>
+                                </div>
+
+                                <a class="whatsapp-btn"
+                                href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit '{{ product.name|urlencode }}', son prix est de {{ product.price }} {{ product.get_currency_display }}."
+                                target="_blank">
+                                    <i class="fab fa-whatsapp"></i>
+                                    Commander
+                                </a>
+                            </div>
+
                         </div>
-
-                        <a class="whatsapp-btn"
-                           href="https://wa.me/{{ vendor.whatsapp_number }}?text=Bonjour, je suis intéressé par le produit '{{ product.name|urlencode }}', son prix est de {{ product.price }} {{ product.get_currency_display }}."
-                           target="_blank">
-                            <i class="fab fa-whatsapp"></i>
-                            Commander
-                        </a>
-                    </div>
-                </div>
-                {% endwith %}
-                {% endwith %}
-                {% endif %}
+                    {% endif %}
                 {% empty %}
-                <div class="empty-state">
-                    <i class="fas fa-shopping-bag"></i>
-                    <p>Aucun produit disponible pour le moment.</p>
-                </div>
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <p>Aucun produit disponible pour le moment.</p>
+                    </div>
                 {% endfor %}
             </div>
+
+
+
+
         </main>
 
         <!-- Section informations -->

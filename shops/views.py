@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .models import Vendor, Product,ProductImage
-from decimal import Decimal
+from django.utils.text import slugify
 
 
 
@@ -147,7 +147,8 @@ def login(request):
 
     return redirect('index')
 
-
+def abonnement(request):
+    return render(request, 'abonnement.html')
 
 @login_required
 def vendor_dashboard(request):
@@ -331,36 +332,39 @@ def update_profile(request):
         return redirect("home")
 
     if request.method == "POST":
-        # 🔐 Vérification du mot de passe
         current_password = request.POST.get("current_password")
-
         if not user.check_password(current_password):
             messages.error(request, "Mot de passe incorrect.")
-            return redirect("update_profile")
+            return redirect("vendor_dashboard")
+        shop_name = request.POST.get("shop_name", "").strip()
+        slug_input = request.POST.get("slug", "").strip()
+        whatsapp_number = request.POST.get("whatsapp_number", "").strip()
+        email = request.POST.get("email", "").strip()
 
-        # 📦 Données valides selon le modèle
-        shop_name = request.POST.get("shop_name")
-        whatsapp_number = request.POST.get("whatsapp_number")
-        email = request.POST.get("email")
-
-        if not shop_name or not whatsapp_number:
+        if not shop_name or not whatsapp_number or not slug_input:
             messages.error(request, "Veuillez remplir tous les champs obligatoires.")
-            return redirect("update_profile")
-
-        # 🏪 Mise à jour Vendor
+            return redirect("vendor_dashboard")
         vendor.shop_name = shop_name
         vendor.whatsapp_number = whatsapp_number
+        if slug_input != vendor.slug:
+            base_slug = slugify(slug_input)
+            slug = base_slug
+            count = 1
+            while Vendor.objects.filter(slug=slug).exclude(id=vendor.id).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+            vendor.slug = slug
+
         vendor.save()
 
-        # 👤 Mise à jour User
-        if email:
+        if email and email != user.email:
             user.email = email
             user.save()
 
         messages.success(request, "Profil mis à jour avec succès.")
-        return redirect("update_profile")
+        return redirect("vendor_dashboard")
 
-    return render(request, "shops/update_profile.html", {
+    return render(request, "produit.html", {
         "vendor": vendor
     })
 
